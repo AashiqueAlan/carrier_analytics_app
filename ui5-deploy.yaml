@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://sap.github.io/ui5-tooling/schema/ui5.yaml.json
+
+specVersion: "3.1"
+metadata:
+  name: carrieranalytics
+type: application
+builder:
+  resources:
+    excludes:
+      - /test/**
+      - /localService/**
+  customTasks:
+    - name: deploy-to-abap
+      afterTask: generateCachebusterInfo
+      configuration:
+        target:
+          destination: DEV-100-BasicAuthentication
+          url: http://s4hanasrv1.local.com:8001
+          client: '100'
+        app:
+          name: ZUI_ANALYTICS
+          description: Carrier Analytics APP
+          package: ZINSP
+          transport: DEVK900505
+        exclude:
+          - /test/

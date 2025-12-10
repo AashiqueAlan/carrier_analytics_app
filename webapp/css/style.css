@@ -1,0 +1,32 @@
+/* Enter your custom styles here */
+
+/* Carrier Inspection Report - Table Cell Text Overflow Handling */
+#carrierTable .sapMListTblCell {
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Allow wrapping for Inspection Codes column only */
+#carrierTable #codeValueText {
+    white-space: normal !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+}
+
+/* Ensure table respects container width */
+#carrierTable {
+    table-layout: auto;
+    width: 100%;
+}
+
+/* Make code reference table more compact */
+#codeReferenceTable .sapMText {
+    font-size: 0.875rem;
+}
+
+#codeReferenceTable .sapMListTblCell {
+    padding: 0.25rem 0.5rem !important;
+}

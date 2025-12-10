@@ -1,0 +1,127 @@
+{
+  "_version": "1.76.0",
+  "sap.app": {
+    "id": "carrieranalytics",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "Carrier Analytics APP",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.19.3",
+      "toolsId": "019a217b-d73c-4e58-aa19-8a7c257f51f9"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/sap/opu/odata/sap/ZINSPECTION_APP_SRV/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.142.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ui.layout": {},
+        "sap.viz": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "carrieranalytics.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {}
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "carrieranalytics.view",
+        "async": true,
+        "viewPath": "carrieranalytics.view"
+      },
+      "routes": [
+        {
+          "name": "RouteMain",
+          "pattern": ":?query:",
+          "target": [
+            "TargetMain"
+          ]
+        },
+        {
+          "name": "RouteCarrierReport",
+          "pattern": "CarrierReport:?query:",
+          "target": [
+            "TargetCarrierReport"
+          ]
+        }
+      ],
+      "targets": {
+        "TargetMain": {
+          "id": "Main",
+          "name": "Main"
+        },
+        "TargetCarrierReport":{
+           "id": "CarrierReport",
+          "name": "CarrierInspectionReport"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "carrieranalytics.view.App",
+      "type": "XML",
+      "id": "App",
+      "async": true
+    }
+  }
+}
