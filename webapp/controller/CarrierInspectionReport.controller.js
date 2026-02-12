@@ -270,6 +270,8 @@ sap.ui.define([
             // Add table header
             tableBody.push([
                 { text: 'S.No', style: 'tableHeader', bold: true },
+                { text: 'Document', style: 'tableHeader', bold: true },
+                { text: 'Sequence', style: 'tableHeader', bold: true },
                 { text: 'Carrier Number', style: 'tableHeader', bold: true },
                 { text: 'Carrier Line', style: 'tableHeader', bold: true },
                 { text: 'Inspection Codes', style: 'tableHeader', bold: true },
@@ -284,6 +286,8 @@ sap.ui.define([
 
                 tableBody.push([
                     oItem.SerialNumber.toString(),
+                    oItem.DocumentNo || '',
+                    oItem.Sequencenumber || '',
                     oItem.CarrierNumber || '',
                     oItem.CarrierTypeCodeText || '',
                     oItem.CodeValue || '',
@@ -317,7 +321,7 @@ sap.ui.define([
                     {
                         table: {
                             headerRows: 1,
-                            widths: [30, 70, 80, 180, 70, 60],
+                            widths: [25, 50, 50, 70, 70, 120, 60, 50],
                             body: tableBody
                         },
                         layout: {
@@ -436,6 +440,8 @@ sap.ui.define([
             sHTML += '<thead>';
             sHTML += '<tr style="background-color: #0070F2; color: white;">';
             sHTML += '<th style="padding: 10px; text-align: left;">S.No</th>';
+            sHTML += '<th style="padding: 10px; text-align: left;">Document</th>';
+            sHTML += '<th style="padding: 10px; text-align: left;">Sequence</th>';
             sHTML += '<th style="padding: 10px; text-align: left;">Carrier Number</th>';
             sHTML += '<th style="padding: 10px; text-align: left;">Carrier Line</th>';
             sHTML += '<th style="padding: 10px; text-align: left;">Inspection Codes</th>';
@@ -453,6 +459,8 @@ sap.ui.define([
 
                 sHTML += '<tr style="background-color: ' + sRowBg + ';">';
                 sHTML += '<td style="padding: 8px;">' + oItem.SerialNumber + '</td>';
+                sHTML += '<td style="padding: 8px;">' + (oItem.DocumentNo || '') + '</td>';
+                sHTML += '<td style="padding: 8px;">' + (oItem.Sequencenumber || '') + '</td>';
                 sHTML += '<td style="padding: 8px;"><strong>' + oItem.CarrierNumber + '</strong></td>';
                 sHTML += '<td style="padding: 8px;">' + (oItem.CarrierTypeCodeText || '') + '</td>';
                 sHTML += '<td style="padding: 8px;">' + (oItem.CodeValue || '') + '</td>';
@@ -497,13 +505,15 @@ sap.ui.define([
             sBody += "=================================\n\n";
 
             // Table header
-            sBody += "S.No | Carrier Number | Carrier Line | Inspection Codes | Created By | Status\n";
-            sBody += "---------------------------------------------------------------------------------\n";
+            sBody += "S.No | Document | Sequence | Carrier Number | Carrier Line | Inspection Codes | Created By | Status\n";
+            sBody += "--------------------------------------------------------------------------------------------------------------\n";
 
             // Table rows
             aData.forEach(function (oItem) {
                 var sStatus = oItem.Status === 'A' ? 'Accepted' : oItem.Status === 'R' ? 'Rejected' : oItem.Status;
                 sBody += oItem.SerialNumber + " | ";
+                sBody += (oItem.DocumentNo || "") + " | ";
+                sBody += (oItem.Sequencenumber || "") + " | ";
                 sBody += oItem.CarrierNumber + " | ";
                 sBody += (oItem.CarrierTypeCodeText || "") + " | ";
                 sBody += (oItem.CodeValue || "") + " | ";

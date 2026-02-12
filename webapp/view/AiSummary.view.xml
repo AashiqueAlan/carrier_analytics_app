@@ -1,0 +1,92 @@
+<mvc:View controllerName="carrieranalytics.controller.AiSummary"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:l="sap.ui.layout"
+    xmlns:c="sap.ui.core" displayBlock="true" height="100%" busyIndicatorDelay="0">
+    <Page id="aiSummaryPage" title="AI Summary" showNavButton="true" navButtonPress="onNavBack">
+        <content>
+            <IconTabBar id="idIconTabBar" expandable="false" class="sapUiResponsiveContentPadding">
+                <items>
+                    <!-- ===== TAB 1: AI SUMMARY ===== -->
+                    
+
+                    <!-- ===== TAB 2: INSIGHTS ===== -->
+                    <IconTabFilter id="insightsTabFilter" key="insights" text="Insights" icon="sap-icon://SAP-icons-TNT/insights">
+
+                        <VBox class="sapUiSmallMargin">
+
+                            <!-- Loading -->
+                            <BusyIndicator visible="{viewModel>/isLoading}" text="Loading insights..." class="sapUiMediumMargin" />
+
+                            <!-- INSIGHTS LIST -->
+                            <VBox visible="{= ${viewModel>/insights}.length > 0 &amp;&amp; !${viewModel>/isLoading} }" items="{viewModel>/insights}">
+
+                                <Panel expandable="false" width="100%" class="sapUiSmallMarginBottom" visible="{ parts: ['viewModel>KeyText'], formatter: '.isInsightAvailable'}">
+
+                                    <headerToolbar>
+                                        <OverflowToolbar>
+                                            <Title level="H4" text="{
+                                parts: [
+                                    'viewModel>InsightType',
+                                    'viewModel>KeyText',
+                                    'viewModel>KeyId',
+                                    'viewModel>PeriodType'
+                                ],
+                                formatter: '.formatPanelHeader'
+                            }" />
+                                            <ToolbarSpacer />
+                                            <ObjectStatus inverted="true" text="{viewModel>Severity}" state="{
+                                path: 'viewModel>Severity',
+                                formatter: '.formatSeverityState'
+                            }" />
+                                        </OverflowToolbar>
+                                    </headerToolbar>
+
+                                    <VBox class="sapUiMediumMargin">
+
+                                        <!-- Insight -->
+                                        <VBox class="sapUiSmallMarginBottom">
+                                            <Label text="Insight" />
+                                            <Text wrapping="true" text="{
+                                parts: [
+                                    'viewModel>InsightType',
+                                    'viewModel>KeyText',
+                                    'viewModel>KeyId',
+                                    'viewModel>PeriodType'
+                                ],
+                                formatter: '.formatInsightHeadline'
+                            }" />
+                                        </VBox>
+
+                                        <!-- Evidence -->
+                                        <VBox>
+                                            <Label text="Evidence" />
+                                            <Text wrapping="true" text="{
+                                parts: [
+                                    'viewModel>InsightType',
+                                    'viewModel>RejectionCount',
+                                    'viewModel>TotalRejections',
+                                    'viewModel>RejectionRate',
+                                    'viewModel>PeriodType'
+                                ],
+                                formatter: '.formatInsightEvidence'
+                            }" />
+                                        </VBox>
+
+                                    </VBox>
+                                </Panel>
+
+                            </VBox>
+
+                            <!-- No Data -->
+                            <MessageStrip text="No insights available for the selected date range." type="Information" showIcon="true" visible="{= ${viewModel>/insights}.length === 0 &amp;&amp; !${viewModel>/isLoading} }" class="sapUiSmallMargin" />
+
+                        </VBox>
+                    </IconTabFilter>
+
+                </items>
+            </IconTabBar>
+        </content>
+    </Page>
+</mvc:View>

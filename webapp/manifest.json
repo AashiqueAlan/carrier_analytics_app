@@ -44,7 +44,7 @@
     }
   },
   "sap.ui5": {
-    "flexEnabled": true,
+    "flexEnabled": false,
     "dependencies": {
       "minUI5Version": "1.142.0",
       "libs": {
@@ -104,6 +104,11 @@
           "target": [
             "TargetCarrierReport"
           ]
+        },
+        {
+          "name": "RouteAiSummary",
+          "pattern": "aiSummary:?query:",
+          "target": "AiSummary"
         }
       ],
       "targets": {
@@ -111,9 +116,13 @@
           "id": "Main",
           "name": "Main"
         },
-        "TargetCarrierReport":{
-           "id": "CarrierReport",
+        "TargetCarrierReport": {
+          "id": "CarrierReport",
           "name": "CarrierInspectionReport"
+        },
+        "AiSummary": {
+          "id": "AiSummary",
+          "name": "AiSummary"
         }
       }
     },

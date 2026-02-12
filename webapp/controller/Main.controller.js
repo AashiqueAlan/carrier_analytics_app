@@ -39,15 +39,29 @@ sap.ui.define([
                 avgRejected: 0
             });
             this.getView().setModel(oViewModel, "viewModel");
+            const oChatModel = new JSONModel({
+                messages: [],
+                userName: "User",
+                suggestions: [
+                    { title: "Get Total Inspections" },
+                    { title: "Get accepted & rejected Count" },
+                    { title: "Top rejection reasons" },
+                    { title: "Top rejection carrier lines" },
+                    { title: "Previous rejection rate" }
+                ]
+            });
+            this._loadUserInfo();
+            this.getView().setModel(oChatModel, "chatModel")
+
 
             // Configure DateRangeSelection to auto-close after date selection and set current date
-            this.getView().attachAfterRendering(function() {
+            this.getView().attachAfterRendering(function () {
                 var oDateRangePicker = this.byId("inspectionDateRangePicker");
                 if (oDateRangePicker && !oDateRangePicker._bCalendarAttached) {
                     oDateRangePicker._bCalendarAttached = true;
 
                     var fnOriginalSelect = oDateRangePicker._handleCalendarSelect;
-                    oDateRangePicker._handleCalendarSelect = function() {
+                    oDateRangePicker._handleCalendarSelect = function () {
                         fnOriginalSelect.apply(this, arguments);
                         // Close picker after both dates are selected
                         if (this.getDateValue() && this.getSecondDateValue()) {
@@ -103,11 +117,17 @@ sap.ui.define([
          * @param {Date} oDate - The date to format
          * @returns {string} Formatted date string (YYYY-MM-DD)
          */
-        _formatDateForOData: function(oDate) {
+        _formatDateForOData: function (oDate) {
+            console.log(oDate);
             var sYear = oDate.getFullYear();
+            console.log(sYear);
             var sMonth = ("0" + (oDate.getMonth() + 1)).slice(-2);
+            console.log(sMonth);
             var sDay = ("0" + oDate.getDate()).slice(-2);
+            console.log(sDay);
+            console.log(sYear + "-" + sMonth + "-" + sDay);
             return sYear + "-" + sMonth + "-" + sDay;
+
         },
 
         /**
@@ -132,7 +152,7 @@ sap.ui.define([
                     var iRejectedCount = 0;
 
                     if (oData.results) {
-                        oData.results.forEach(function(oItem) {
+                        oData.results.forEach(function (oItem) {
                             if (oItem.Status === "A") {
                                 iAcceptedCount++;
                             } else if (oItem.Status === "R") {
@@ -205,6 +225,42 @@ sap.ui.define([
             console.log("=== onNavigateToCarrierReport END ===");
         },
 
+        /**
+         * Navigate to AI Summary view with selected date range
+         * Handler for Tile 4 press event
+         */
+        onNavigateToAiSummary: function () {
+            var oViewModel = this.getView().getModel("viewModel");
+            var oStartDate = oViewModel.getProperty("/selectedStartDate");
+            var oEndDate = oViewModel.getProperty("/selectedEndDate");
+
+            if (oStartDate && oEndDate) {
+                var sStartDate = this._formatDateForOData(oStartDate);
+                var sEndDate = this._formatDateForOData(oEndDate);
+
+                console.log("Main: Navigating to AiSummary with dates:", sStartDate, sEndDate);
+
+                // Store dates in shared data model so AiSummary can access them
+                var oSharedModel = this.getOwnerComponent().getModel("sharedData");
+                oSharedModel.setProperty("/aiSummaryStartDate", sStartDate);
+                oSharedModel.setProperty("/aiSummaryEndDate", sEndDate);
+
+                this.getOwnerComponent().getRouter().navTo("RouteAiSummary");
+            } else {
+                // Navigate with default date range (today)
+                var oToday = new Date();
+                var sToday = this._formatDateForOData(oToday);
+
+                console.log("Main: Navigating to AiSummary with default date (today):", sToday);
+
+                var oSharedModel = this.getOwnerComponent().getModel("sharedData");
+                oSharedModel.setProperty("/aiSummaryStartDate", sToday);
+                oSharedModel.setProperty("/aiSummaryEndDate", sToday);
+
+                this.getOwnerComponent().getRouter().navTo("RouteAiSummary");
+            }
+        },
+
         // ========== Date Range Analysis Functionality ========== //
 
         /**
@@ -212,7 +268,7 @@ sap.ui.define([
          * Stores the selected date range for trend analysis
          * @param {sap.ui.base.Event} oEvent - The date range change event
          */
-        onDateRangeChange: function(oEvent) {
+        onDateRangeChange: function (oEvent) {
             var oDateRangeSelection = oEvent.getSource();
             var oStartDate = oDateRangeSelection.getDateValue();
             var oEndDate = oDateRangeSelection.getSecondDateValue();
@@ -235,7 +291,7 @@ sap.ui.define([
          * Handler for Analyze Trends button press
          * Validates date range (max 90 days) and triggers trend data fetching
          */
-        onAnalyzeTrends: function() {
+        onAnalyzeTrends: function () {
             if (!this._selectedDateRange) {
                 MessageToast.show("Please select a date range first");
                 return;
@@ -265,7 +321,7 @@ sap.ui.define([
          * @param {Date} oEndDate - End date
          * @returns {number} Number of days between dates
          */
-        _getDaysBetween: function(oStartDate, oEndDate) {
+        _getDaysBetween: function (oStartDate, oEndDate) {
             var iMilliseconds = oEndDate.getTime() - oStartDate.getTime();
             return Math.ceil(iMilliseconds / (1000 * 60 * 60 * 24));
         },
@@ -276,7 +332,7 @@ sap.ui.define([
          * @param {Date} oEndDate - End date
          * @returns {Date[]} Array of Date objects for each day in range
          */
-        _getDateRange: function(oStartDate, oEndDate) {
+        _getDateRange: function (oStartDate, oEndDate) {
             var aDates = [];
             var oCurrentDate = new Date(oStartDate);
 
@@ -293,7 +349,7 @@ sap.ui.define([
          * @param {Date} oDate - Date to format
          * @returns {string} Formatted date string (dd/MM/yyyy)
          */
-        _formatDateForDisplay: function(oDate) {
+        _formatDateForDisplay: function (oDate) {
             var sDay = ("0" + oDate.getDate()).slice(-2);
             var sMonth = ("0" + (oDate.getMonth() + 1)).slice(-2);
             var sYear = oDate.getFullYear();
@@ -306,7 +362,7 @@ sap.ui.define([
          * @param {Date} oStartDate - Start date of range
          * @param {Date} oEndDate - End date of range
          */
-        _fetchTrendData: function(oStartDate, oEndDate) {
+        _fetchTrendData: function (oStartDate, oEndDate) {
             var oViewModel = this.getView().getModel("viewModel");
 
             oViewModel.setProperty("/isLoading", true);
@@ -320,7 +376,7 @@ sap.ui.define([
             this._carrierCache = {};
 
             // Parallel fetch for all dates in range
-            aDates.forEach(function(oDate) {
+            aDates.forEach(function (oDate) {
                 var sFormattedDate = this._formatDateForOData(oDate);
                 var sDisplayDate = this._formatDateForDisplay(oDate);
 
@@ -339,11 +395,11 @@ sap.ui.define([
                 var oRejectedPromise = this._fetchCarriersWithCountPromise(oDate, "R");
 
                 aPromises.push(
-                    oAcceptedPromise.then(function(oData) {
+                    oAcceptedPromise.then(function (oData) {
                         oResults[sDisplayDate].accepted = oData.count;
                         this._carrierCache[sDisplayDate].accepted = oData.carriers;
                     }.bind(this)),
-                    oRejectedPromise.then(function(oData) {
+                    oRejectedPromise.then(function (oData) {
                         oResults[sDisplayDate].rejected = oData.count;
                         this._carrierCache[sDisplayDate].rejected = oData.carriers;
                     }.bind(this))
@@ -352,9 +408,9 @@ sap.ui.define([
 
             // Wait for all promises to complete
             Promise.all(aPromises)
-                .then(function() {
+                .then(function () {
                     // Convert results object to array and sort by date
-                    var aChartData = aDates.map(function(oDate) {
+                    var aChartData = aDates.map(function (oDate) {
                         var sDisplayDate = this._formatDateForDisplay(oDate);
                         return oResults[sDisplayDate];
                     }.bind(this));
@@ -364,7 +420,7 @@ sap.ui.define([
                     var iTotalRejected = 0;
                     var bHasData = false;
 
-                    aChartData.forEach(function(oData) {
+                    aChartData.forEach(function (oData) {
                         iTotalAccepted += oData.accepted;
                         iTotalRejected += oData.rejected;
                         if (oData.accepted > 0 || oData.rejected > 0) {
@@ -383,7 +439,7 @@ sap.ui.define([
                     oViewModel.setProperty("/avgAccepted", fAvgAccepted);
                     oViewModel.setProperty("/avgRejected", fAvgRejected);
                     oViewModel.setProperty("/isLoading", false);
-                    
+
                     if (bHasData) {
                         oViewModel.setProperty("/showChart", true);
                         oViewModel.setProperty("/showNoData", false);
@@ -393,7 +449,7 @@ sap.ui.define([
                         oViewModel.setProperty("/showNoData", true);
                     }
                 }.bind(this))
-                .catch(function(oError) {
+                .catch(function (oError) {
                     console.error("Error fetching trend data:", oError);
                     MessageBox.error("Error fetching trend data. Please try again.");
                     oViewModel.setProperty("/isLoading", false);
@@ -409,8 +465,8 @@ sap.ui.define([
          * @param {string} sStatus - Status code ("A" or "R")
          * @returns {Promise<{count: number, carriers: string[]}>} Promise resolving with count and carrier list
          */
-        _fetchCarriersWithCountPromise: function(oDate, sStatus) {
-            return new Promise(function(resolve, reject) {
+        _fetchCarriersWithCountPromise: function (oDate, sStatus) {
+            return new Promise(function (resolve, reject) {
                 var oModel = this.getView().getModel();
                 var sPath = "/InspectionHeaderSet";
                 var sFormattedDate = this._formatDateForOData(oDate);
@@ -422,13 +478,13 @@ sap.ui.define([
 
                 oModel.read(sPath, {
                     filters: aFilters,
-                    success: function(oData) {
+                    success: function (oData) {
                         var aCarriers = [];
                         var iCount = 0;
 
                         if (oData.results && oData.results.length > 0) {
                             iCount = oData.results.length;
-                            aCarriers = oData.results.map(function(oItem) {
+                            aCarriers = oData.results.map(function (oItem) {
                                 return oItem.CarrierNumber || oItem.Carrier || "N/A";
                             });
                         }
@@ -438,7 +494,7 @@ sap.ui.define([
                             carriers: aCarriers
                         });
                     },
-                    error: function(oError) {
+                    error: function (oError) {
                         console.error("Error fetching carriers:", oError);
                         // Resolve with empty data instead of rejecting
                         resolve({
@@ -454,7 +510,7 @@ sap.ui.define([
          * Handler for chart type toggle button (Line vs Bar)
          * @param {sap.ui.base.Event} oEvent - The selection change event
          */
-        onChartTypeChange: function(oEvent) {
+        onChartTypeChange: function (oEvent) {
             var sSelectedKey = oEvent.getParameter("item").getKey();
             var oViewModel = this.getView().getModel("viewModel");
             oViewModel.setProperty("/chartType", sSelectedKey);
@@ -468,7 +524,7 @@ sap.ui.define([
          * Uses cached data when available for instant display
          * @param {sap.ui.base.Event} oEvent - The chart selection event
          */
-        onChartBarSelect: function(oEvent) {
+        onChartBarSelect: function (oEvent) {
             var aData = oEvent.getParameter("data");
 
             if (!aData || aData.length === 0) {
@@ -524,7 +580,7 @@ sap.ui.define([
          * @param {string} sDisplayDate - Date string in dd/MM/yyyy format
          * @returns {Date|null} Date object or null if invalid format
          */
-        _parseDisplayDate: function(sDisplayDate) {
+        _parseDisplayDate: function (sDisplayDate) {
             var aParts = sDisplayDate.split("/");
             if (aParts.length !== 3) {
                 return null;
@@ -544,7 +600,7 @@ sap.ui.define([
          * @param {string} sStatusLabel - Status label for display ("Accepted"/"Rejected")
          * @param {sap.ui.base.Event} oEvent - The chart event object for popover positioning
          */
-        _fetchCarrierNumbers: function(oDate, sStatus, sStatusLabel, oEvent) {
+        _fetchCarrierNumbers: function (oDate, sStatus, sStatusLabel, oEvent) {
             var oModel = this.getView().getModel();
             var sPath = "/InspectionHeaderSet";
             var sFormattedDate = this._formatDateForOData(oDate);
@@ -557,10 +613,10 @@ sap.ui.define([
 
             oModel.read(sPath, {
                 filters: aFilters,
-                success: function(oData) {
+                success: function (oData) {
                     if (oData.results && oData.results.length > 0) {
                         // Extract carrier numbers
-                        var aCarrierNumbers = oData.results.map(function(oItem) {
+                        var aCarrierNumbers = oData.results.map(function (oItem) {
                             return oItem.CarrierNumber || oItem.Carrier || "N/A";
                         });
 
@@ -570,7 +626,7 @@ sap.ui.define([
                         MessageToast.show("No carriers found for this selection");
                     }
                 }.bind(this),
-                error: function(oError) {
+                error: function (oError) {
                     console.error("Error fetching carrier numbers:", oError);
                     MessageBox.error("Error fetching carrier details. Please try again.");
                 }.bind(this)
@@ -586,7 +642,7 @@ sap.ui.define([
          * @param {string} sDate - Formatted date string for display
          * @param {sap.ui.base.Event} oEvent - The chart event for popover positioning
          */
-        _showCarrierPopover: function(aCarrierNumbers, sStatusLabel, sDate, oEvent) {
+        _showCarrierPopover: function (aCarrierNumbers, sStatusLabel, sDate, oEvent) {
             // Close existing popover if open
             if (this._oCarrierPopover) {
                 this._oCarrierPopover.destroy();
@@ -615,7 +671,7 @@ sap.ui.define([
 
             // Create the carrier list
             var oCarrierList = new sap.m.List({
-                items: aUniqueCarrierNumbers.map(function(sCarrierNumber) {
+                items: aUniqueCarrierNumbers.map(function (sCarrierNumber) {
                     return new sap.m.StandardListItem({
                         title: sCarrierNumber,
                         icon: "sap-icon://shipping-status"
@@ -656,7 +712,7 @@ sap.ui.define([
                         new sap.m.ToolbarSpacer(),
                         new sap.m.Button({
                             text: "Close",
-                            press: function() {
+                            press: function () {
                                 this._oCarrierPopover.close();
                             }.bind(this)
                         })
@@ -674,7 +730,211 @@ sap.ui.define([
                 this._oCarrierPopover.openBy(oVizFrame);
             }
         },
+        //============= Ai codeings ================
 
 
+        onFloatingPress: function (oEvent) {
+            const oDialog = this.byId("chatDialog");
+            const oModel = this.getView().getModel("chatModel");
+
+            if (oModel.getProperty("/messages").length === 0) {
+                oModel.setProperty("/messages", [{
+                    sender: "AI Assistant",
+                    text: "Hello " + oModel.getProperty("/userName") + " 👋\nHow can I help you?",
+                }]);
+            }
+
+            oDialog.openBy(oEvent.getSource());
+        },
+
+        onCloseChat: function () {
+            this.byId("chatDialog").close();
+        },
+
+        onSuggestionItemPress: function (oEvent) {
+            const sText = oEvent.getSource().getTitle();
+            console.log("hi")
+            this.byId("chatInput").setValue(sText);
+
+            this.byId("suggestionPopover").close();
+        },
+
+        onOpenSuggestionPopover: function (oEvent) {
+
+
+            const oPopover = this.byId("suggestionPopover");
+            oPopover.openBy(oEvent.getSource());
+        },
+        async _loadUserInfo() {
+
+            try {
+                if (Container) {
+                    const oUserInfo = await Container.getServiceAsync("UserInfo");
+                    console.log(oUserInfo);
+                    const sName = oUserInfo.getFirstName() || oUserInfo.getUser();
+
+                    this.getView().getModel("chatModel")
+                        .setProperty("/userName", sName);
+                }
+            } catch (error) {
+                console.warn("UserInfo service not available", error);
+            }
+        },
+
+        onPostMessage(oEvent) {
+
+            let sValue = "";
+
+            // If triggered by Input submit
+            if (oEvent.getParameter && oEvent.getParameter("value")) {
+                sValue = oEvent.getParameter("value");
+            }
+            // If triggered by button press
+            else {
+                sValue = this.byId("chatInput").getValue();
+            }
+
+            if (!sValue || !sValue.trim()) {
+                return;
+            }
+
+            this.postMessage(sValue);
+
+            this.byId("chatInput").setValue("");
+        },
+
+        postMessage(sValue) {
+
+            const oView = this.getView();
+            const oChatModel = oView.getModel("chatModel");
+            const oViewModel = this.getView().getModel("viewModel");
+            const sStartDate = oViewModel.getProperty("/selectedStartDate");
+            const sEndDate = oViewModel.getProperty("/selectedEndDate");
+            console.log(sStartDate);
+            console.log(sEndDate);
+            const aMessages = oChatModel.getProperty("/messages");
+
+            //  Add User Message (Right side)
+            aMessages.push({
+                sender: "Me",
+                text: sValue
+            });
+            // Add temporary typing message
+            aMessages.push({
+                sender: "AI Assistant",
+                typing: true
+            });
+
+
+            oChatModel.setProperty("/messages", aMessages);
+            this._scrollToBottom();
+
+            const oDialog = this.byId("chatDialog");
+            // oDialog.setBusy(true);
+
+            const oODataModel = this.getOwnerComponent().getModel();
+
+            // // Hardcoded dates
+            // const sStartDate = "datetime'2025-11-07T00:00:00'";
+            // const sEndDate = "datetime'2025-11-30T00:00:00'";
+
+            const sFormattedStart = this._formatDateTimeForOData(sStartDate);
+            const sFormattedEnd = this._formatDateTimeForOData(sEndDate);
+
+            const sFilter =
+                "StartDate eq " + sFormattedStart +
+                " and EndDate eq " + sFormattedEnd;
+            oODataModel.read("/InspectionSummarySet", {
+                urlParameters: {
+                    "$filter": sFilter
+                },
+                success: (oData) => {
+                    if (!oData.results || !oData.results.length) {
+                        this._removeTyping();
+                        this._addBotMessage("No data found.");
+                        // oDialog.setBusy(false);
+                        return;
+                    }
+
+                    const oSummary = oData.results[0];
+                    console.log(oSummary);
+                    let sResponse = this._buildResponse(sValue, oSummary);
+
+                    this._removeTyping();
+
+                    this._addBotMessage(sResponse);
+
+                    // oDialog.setBusy(false);
+                    this._scrollToBottom();
+                },
+                error: () => {
+                    this._removeTyping();
+                    this._addBotMessage("Backend error. Please try again.");
+                    this._scrollToBottom();
+                }
+            });
+        },
+        _formatDateTimeForOData: function (oDate) {
+            var sYear = oDate.getFullYear();
+            var sMonth = ("0" + (oDate.getMonth() + 1)).slice(-2);
+            var sDay = ("0" + oDate.getDate()).slice(-2);
+
+            return "datetime'" + sYear + "-" + sMonth + "-" + sDay + "T00:00:00'";
+        },
+
+        _buildResponse(sValue, oSummary) {
+
+            const sQuery = sValue.toLowerCase();
+
+            if (sQuery.includes("total")) {
+                return "Total inspections : " + oSummary.TotalInspections;
+            }
+
+            if (sQuery.includes("accepted")) {
+                return "Accepted : " + oSummary.AcceptedCount +
+                    "\nRejected : " + oSummary.RejectedCount;
+            }
+
+            if (sQuery.includes("reason")) {
+                return "Top rejection reasons:\n" + oSummary.TopRejectedReason;
+            }
+
+            if (sQuery.includes("carrier") || sQuery.includes("rejected")) {
+                return "Top rejected carriers:\n" + oSummary.TopRejectedCarrierLine;
+            }
+
+            if (sQuery.includes("previous") || sQuery.includes("rate")) {
+                return "Previous rejection rate : " + oSummary.PrevRejectionRate + "%";
+            }
+
+            return "I couldn't understand the question.";
+        },
+        _removeTyping() {
+            const oChatModel = this.getView().getModel("chatModel");
+            const aMessages = oChatModel.getProperty("/messages")
+                .filter(m => !m.typing);
+
+            oChatModel.setProperty("/messages", aMessages);
+        },
+        _addBotMessage(sText) {
+
+            const oChatModel = this.getView().getModel("chatModel");
+            const aMessages = oChatModel.getProperty("/messages");
+
+            aMessages.push({
+                sender: "AI Assistant",
+                text: sText
+            });
+
+            oChatModel.setProperty("/messages", aMessages);
+            this._scrollToBottom();
+        },
+
+        _scrollToBottom() {
+            const oScroll = this.byId("chatScroll");
+            setTimeout(() => {
+                oScroll.scrollTo(0, oScroll.getScrollDelegate().getMaxScrollTop());
+            }, 100);
+        },
     });
 });

@@ -149,19 +149,12 @@
                                     hAlign="Center">
                                 <Text id="serialNumberHeader" text="S.No"/>
                             </Column>
-                            <Column id="documentNumberColumn"
-                                    width="4rem"
+                            <Column id="documentSeqColumn"
+                                    width="6rem"
                                     minScreenWidth="Phone"
                                     demandPopin="false"
-                                    hAlign="Center">
-                                <Text id="documentNumberHeader" text="Document No"/>
-                            </Column>
-                            <Column id="sequenceNumberColumn"
-                                    width="4rem"
-                                    minScreenWidth="Phone"
-                                    demandPopin="false"
-                                    hAlign="Center">
-                                <Text id="sequenceNumberHeader" text="Sequence No"/>
+                                    hAlign="Begin">
+                                <Text text="Document/&#10;Seq" wrapping="true"/>
                             </Column>
                             <Column id="carrierNumberColumn"
                                     width="11rem"
@@ -202,14 +195,10 @@
                                           text="{viewModel>SerialNumber}"
                                           wrapping="false"
                                           textAlign="Center"/>
-                                    <Text id="documentNumberText"
-                                          text="{viewModel>Document}"
-                                          wrapping="false"
-                                          textAlign="Center"/>
-                                    <Text id="sequenceNumberText"
-                                          text="{viewModel>Sequence}"
-                                          wrapping="false"
-                                          textAlign="Center"/>
+                                    <Text id="documentSeqText"
+                                            text="{= ${viewModel>DocumentNo} + '/' + ${viewModel>Sequencenumber} }"
+                                            wrapping="false"/>
+
                                     <Text id="carrierNumberText"
                                           text="{viewModel>CarrierNumber}"
                                           wrapping="false"
@@ -254,6 +243,18 @@
                                     <HBox id="idSerialNumberRowHBox">
                                         <Label id="idSNoLabel" text="S.No:" class="sapUiTinyMarginEnd" design="Bold"/>
                                         <Text id="idSerialNumberText" text="{viewModel>SerialNumber}"/>
+                                    </HBox>
+
+                                    <!-- Document Number with label -->
+                                    <HBox id="idDocumentNumberRowHBox" class="sapUiTinyMarginTop">
+                                        <Label id="idDocumentLabel" text="Document:" class="sapUiTinyMarginEnd" design="Bold"/>
+                                        <Text id="idDocumentNumberText" text="{viewModel>DocumentNo}"/>
+                                    </HBox>
+
+                                    <!-- Sequence Number with label -->
+                                    <HBox id="idSequenceNumberRowHBox" class="sapUiTinyMarginTop">
+                                        <Label id="idSequenceLabel" text="Sequence:" class="sapUiTinyMarginEnd" design="Bold"/>
+                                        <Text id="idSequenceNumberText" text="{viewModel>Sequencenumber}"/>
                                     </HBox>
 
                                     <!-- Carrier Number with label -->
