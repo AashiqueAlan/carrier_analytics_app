@@ -98,25 +98,37 @@
 
                     <!-- Shared Filter Bar - Responsive layout: Desktop (Horizontal), Mobile (Vertical) -->
                     <l:Grid id="filterBarContainer"
-                            defaultSpan="L12 M12 S12"
+                            
                             class="sapUiSmallMarginTop sapUiSmallMarginBottom"
                             visible="{= !${viewModel>/isLoadingTable}}">
                         <SearchField
                             id="carrierLineFilter"
+                          
                             placeholder="Filter by Carrier Line..."
                             search="onFilterCarrierLine"
                             liveChange="onFilterCarrierLine">
                             <layoutData>
-                                <l:GridData id="carrierLineFilterLayoutData" span="L6 M6 S12" />
+                                <l:GridData id="carrierLineFilterLayoutData" span="L4 M6 S12"  />
                             </layoutData>
                         </SearchField>
                         <SearchField
                             id="createdByFilter"
+                          
                             placeholder="Filter by Inspector..."
                             search="onFilterCreatedBy"
                             liveChange="onFilterCreatedBy">
                             <layoutData>
-                                <l:GridData id="createdByFilterLayoutData" span="L6 M6 S12" />
+                                <l:GridData id="createdByFilterLayoutData" span="L4 M6 S12"  />
+                            </layoutData>
+                        </SearchField>
+                        <SearchField
+                            id="StatusFilter"
+                            
+                            placeholder="Filter by Status..."
+                            search="onFilterStatus"
+                            liveChange="onFilterStatus">
+                            <layoutData>
+                                <l:GridData id="statusFilterLayoutData" span="L4 M6 S12"  />
                             </layoutData>
                         </SearchField>
                     </l:Grid>

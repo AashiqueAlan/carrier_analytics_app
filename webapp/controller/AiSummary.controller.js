@@ -179,7 +179,43 @@ sap.ui.define([
                 },
                 success: function (oData) {
                     oViewModel.setProperty("/isLoading", false);
-                    oViewModel.setProperty("/insights", oData.results || []);
+                    var aResults = oData.results || [];
+
+                    // find current carrier items
+                    var aCarrierCurrent = aResults.filter(function (oItem) {
+                        return oItem.InsightType === "CARRIER_LINE" &&
+                            oItem.PeriodType === "CURRENT";
+                    });
+
+                    if (aCarrierCurrent.length > 1) {
+
+                        // get first index of current carrier
+                        var iInsertIndex = aResults.findIndex(function (oItem) {
+                            return oItem.InsightType === "CARRIER_LINE" &&
+                                oItem.PeriodType === "CURRENT";
+                        });
+
+                        // merge names
+                        var sMergedNames = aCarrierCurrent.map(function (oItem) {
+                            return oItem.KeyText;
+                        }).join(", ");
+
+                        var oMerged = Object.assign({}, aCarrierCurrent[0]);
+                        oMerged.KeyText = sMergedNames;
+
+                        // remove original current carriers
+                        aResults = aResults.filter(function (oItem) {
+                            return !(oItem.InsightType === "CARRIER_LINE" &&
+                                oItem.PeriodType === "CURRENT");
+                        });
+
+                        // insert merged at original position
+                        aResults.splice(iInsertIndex, 0, oMerged);
+                    }
+
+                    oViewModel.setProperty("/insights", aResults);
+
+                    console.log("Insights", oData.results);
                 },
                 error: function () {
                     oViewModel.setProperty("/isLoading", false);

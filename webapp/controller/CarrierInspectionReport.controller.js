@@ -67,11 +67,11 @@ sap.ui.define([
                 var oMetadataLoaded = oModel.metadataLoaded();
                 if (oMetadataLoaded) {
                     console.log("CarrierInspectionReport - Waiting for metadata to load...");
-                    oMetadataLoaded.then(function() {
+                    oMetadataLoaded.then(function () {
                         console.log("CarrierInspectionReport - Metadata loaded, fetching codes...");
                         // Fetch codes after metadata is loaded
                         this._fetchInspectionCodes();
-                    }.bind(this)).catch(function(oError) {
+                    }.bind(this)).catch(function (oError) {
                         console.error("Error loading metadata:", oError);
                         MessageBox.error("Error initializing data service. Please refresh the page.");
                     });
@@ -216,15 +216,15 @@ sap.ui.define([
                 "&body=" + encodeURIComponent(sBody);
 
             // Open Outlook Web App in popup window after a short delay to allow download
-            setTimeout(function() {
+            setTimeout(function () {
                 var iWidth = 1000;
                 var iHeight = 800;
                 var iLeft = (screen.width - iWidth) / 2;
                 var iTop = (screen.height - iHeight) / 2;
 
                 var sWindowFeatures = "width=" + iWidth + ",height=" + iHeight +
-                                    ",left=" + iLeft + ",top=" + iTop +
-                                    ",resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,status=no";
+                    ",left=" + iLeft + ",top=" + iTop +
+                    ",resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,status=no";
 
                 window.open(sOutlookWebURL, 'OutlookCompose', sWindowFeatures);
             }, 500);
@@ -243,10 +243,10 @@ sap.ui.define([
             var that = this;
 
             // Use pdfMakeLoader to load the libraries
-            pdfMakeLoader.load().then(function(pdfMake) {
+            pdfMakeLoader.load().then(function (pdfMake) {
                 console.log("pdfMake loaded successfully via loader");
                 that._createPDF(aData, sStartDate, sEndDate, sFileName);
-            }).catch(function(error) {
+            }).catch(function (error) {
                 console.error("Failed to load pdfMake:", error);
                 MessageBox.error("Failed to load PDF library: " + error.message);
             });
@@ -261,8 +261,8 @@ sap.ui.define([
          */
         _createPDF: function (aData, sStartDate, sEndDate, sFileName) {
             // Calculate statistics
-            var iAccepted = aData.filter(function(item) { return item.Status === 'A'; }).length;
-            var iRejected = aData.filter(function(item) { return item.Status === 'R'; }).length;
+            var iAccepted = aData.filter(function (item) { return item.Status === 'A'; }).length;
+            var iRejected = aData.filter(function (item) { return item.Status === 'R'; }).length;
 
             // Prepare table body
             var tableBody = [];
@@ -343,7 +343,7 @@ sap.ui.define([
                         }
                     }
                 ],
-                footer: function(currentPage, pageCount) {
+                footer: function (currentPage, pageCount) {
                     return {
                         columns: [
                             {
@@ -396,8 +396,8 @@ sap.ui.define([
          */
         _generateEmailBodyWithAttachment: function (aData, sStartDate, sEndDate, sFileName) {
             // Count statistics
-            var iAccepted = aData.filter(function(item) { return item.Status === 'A'; }).length;
-            var iRejected = aData.filter(function(item) { return item.Status === 'R'; }).length;
+            var iAccepted = aData.filter(function (item) { return item.Status === 'A'; }).length;
+            var iRejected = aData.filter(function (item) { return item.Status === 'R'; }).length;
 
             var sBody = "Dear Team,\n\n";
             sBody += "Please find attached the Carrier Inspection Report.\n\n";
@@ -418,8 +418,8 @@ sap.ui.define([
          */
         _generateEmailBodyHTML: function (aData, sStartDate, sEndDate) {
             // Count statistics
-            var iAccepted = aData.filter(function(item) { return item.Status === 'A'; }).length;
-            var iRejected = aData.filter(function(item) { return item.Status === 'R'; }).length;
+            var iAccepted = aData.filter(function (item) { return item.Status === 'A'; }).length;
+            var iRejected = aData.filter(function (item) { return item.Status === 'R'; }).length;
 
             var sHTML = '<div style="font-family: Arial, sans-serif;">';
             sHTML += '<h2 style="color: #0070F2;">Carrier Inspection Report</h2>';
@@ -496,8 +496,8 @@ sap.ui.define([
             sBody += "Total Records: " + aData.length + "\n\n";
 
             // Count statistics
-            var iAccepted = aData.filter(function(item) { return item.Status === 'A'; }).length;
-            var iRejected = aData.filter(function(item) { return item.Status === 'R'; }).length;
+            var iAccepted = aData.filter(function (item) { return item.Status === 'A'; }).length;
+            var iRejected = aData.filter(function (item) { return item.Status === 'R'; }).length;
 
             sBody += "Summary:\n";
             sBody += "  - Accepted: " + iAccepted + "\n";
@@ -886,6 +886,15 @@ sap.ui.define([
         },
 
         /**
+         * Filter carrier data by Status (supports live search)
+         * Filters carriers based on search query (case insensitive)
+         * Works with both 'search' (Enter key) and 'liveChange' (as you type) events
+         * @param {sap.ui.base.Event} oEvent - Search or liveChange event
+         */
+        onFilterStatus: function () {
+            this._applyFilters();
+        },
+        /**
          * Apply combined filters for carrier line and CreatedBy
          * Filters are applied simultaneously (AND logic)
          * Uses single shared filter fields for both desktop and mobile
@@ -904,18 +913,21 @@ sap.ui.define([
             // Get filter values from shared filter fields
             var oCarrierLineFilter = this.byId("carrierLineFilter");
             var oCreatedByFilter = this.byId("createdByFilter");
+            var oStatusFilter = this.byId("StatusFilter");
 
             var sCarrierLineQuery = oCarrierLineFilter ? (oCarrierLineFilter.getValue() || "").trim() : "";
             var sCreatedByQuery = oCreatedByFilter ? (oCreatedByFilter.getValue() || "").trim() : "";
+            var sStatusQuery = oStatusFilter ? (oStatusFilter.getValue() || "").trim() : "";
 
             // Convert to lowercase for case-insensitive search
             var sCarrierLineQueryLower = sCarrierLineQuery.toLowerCase();
             var sCreatedByQueryLower = sCreatedByQuery.toLowerCase();
+            var sStatusQueryLower = sStatusQuery.toLowerCase();
 
             console.log("Filter inputs - CarrierLine:", sCarrierLineQuery, "CreatedBy:", sCreatedByQuery);
 
             // If both filters are empty, show all data
-            if (!sCarrierLineQuery && !sCreatedByQuery) {
+            if (!sCarrierLineQuery && !sCreatedByQuery && !sStatusQuery) {
                 oViewModel.setProperty("/carrierData", aAllCarriers);
                 this._updateStatusCounts(aAllCarriers);
                 console.log("No filters applied, showing all", aAllCarriers.length, "records");
@@ -926,9 +938,18 @@ sap.ui.define([
             var aFilteredCarriers = aAllCarriers.filter(function (oCarrier) {
                 var sCarrierLine = (oCarrier.CarrierTypeCodeText || "").toLowerCase();
                 var sCreatedBy = (oCarrier.CreatedBy || "").toLowerCase();
+                var sStatusCode = (oCarrier.Status || "").toLowerCase();
+
+                var sStatusText = "";
+                if (sStatusCode === "a") {
+                    sStatusText = "accepted";
+                } else if (sStatusCode === "r") {
+                    sStatusText = "rejected";
+                }
 
                 var bCarrierLineMatch = true;
                 var bCreatedByMatch = true;
+                var bStatusMatch = true;
 
                 // Only filter by carrier line if query is provided
                 if (sCarrierLineQueryLower) {
@@ -939,12 +960,17 @@ sap.ui.define([
                 if (sCreatedByQueryLower) {
                     bCreatedByMatch = sCreatedBy.indexOf(sCreatedByQueryLower) !== -1;
                 }
+                if (sStatusQueryLower) {
+                    bStatusMatch =
+                        sStatusCode.indexOf(sStatusQueryLower) !== -1 ||
+                        sStatusText.indexOf(sStatusQueryLower) !== -1;
+                }
 
-                return bCarrierLineMatch && bCreatedByMatch;
+                return bCarrierLineMatch && bCreatedByMatch && bStatusMatch;
             });
 
             // Create copies of filtered results before re-numbering to avoid mutating original data
-            aFilteredCarriers = aFilteredCarriers.map(function(oCarrier, iIndex) {
+            aFilteredCarriers = aFilteredCarriers.map(function (oCarrier, iIndex) {
                 // Create a shallow copy of the carrier object
                 var oCarrierCopy = Object.assign({}, oCarrier);
                 // Assign new serial number for display

@@ -14,6 +14,7 @@
             id="chatDialog"
             contentWidth="400px"
             placement="Left"
+            afterOpen="onChatAfterOpen"
         >
             <customHeader>
                 <Bar
@@ -77,7 +78,7 @@
                                             src="sap-icon://SAP-icons-TNT/robot"
                                             displaySize="XS"
                                             displayShape="Square"
-                                            backgroundColor="TileIcon"
+                                            backgroundColor="Accent3"
                                             visible="{= ${chatModel>sender} !== 'Me' }"
                                             class="sapUiTinyMarginEnd"
                                         />
@@ -90,9 +91,13 @@
                                         />
                                         <!-- User Avatar (Right Side) -->
                                         <Avatar
-                                            initials="{chatModel>/userName}"
+                                            initials="{
+                                                path: 'chatModel>/userName',
+                                                formatter: '.formatInitial'
+                                            }"
                                             displaySize="XS"
                                             displayShape="Square"
+                                            backgroundColor="Accent9"
                                             visible="{= ${chatModel>sender} === 'Me' }"
                                             class="sapUiTinyMarginBegin"
                                         />
@@ -106,7 +111,7 @@
                         <Button
                             id="helpButton"
                             icon="sap-icon://discussion-2"
-                            type="Transparent"
+                            type="Ghost"
                             press="onOpenSuggestionPopover"
                         />
                         <Input
@@ -134,6 +139,7 @@
             <OverflowToolbar>
                 <ToolbarSpacer />
                 <Button
+                text="Ask Me "
                     id="floatingActionBtn"
                     icon="sap-icon://da-2"
                     type="Transparent"
@@ -225,8 +231,8 @@
                     <GenericTile
                         id="aiSummaryTile"
                         class="sapUiTinyMarginBottom"
-                        header="Insights"
-                        subheader="View Insight"
+                        header="AI Summary"
+                        subheader="View AI Summary"
                         frameType="OneByOne"
                         press="onNavigateToAiSummary"
                     >
@@ -234,6 +240,9 @@
                             <ImageContent src="sap-icon://ai" />
                         </TileContent>
                     </GenericTile>
+
+                    
+
                 </l:HorizontalLayout>
                 <!-- ========== NEW FEATURE - Date Range Trend Analysis ========== -->
                 <Panel
@@ -503,6 +512,7 @@
                                     />
                                 </VBox>
                             </l:Grid>
+                            
                         </VBox>
                         <!-- No Data Message -->
                         <MessageStrip

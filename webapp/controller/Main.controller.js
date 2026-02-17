@@ -4,8 +4,9 @@ sap.ui.define([
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/m/MessageBox",
-    "sap/m/MessageToast"
-], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast) {
+    "sap/m/MessageToast",
+    "sap/ushell/Container"
+], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Container) {
     "use strict";
 
     return Controller.extend("carrieranalytics.controller.Main", {
@@ -83,6 +84,7 @@ sap.ui.define([
                 }
             }.bind(this));
         },
+
 
         /**
          * Handler for main date range picker change event
@@ -730,8 +732,40 @@ sap.ui.define([
                 this._oCarrierPopover.openBy(oVizFrame);
             }
         },
-        //============= Ai codeings ================
+        //============= Ai codings ================
 
+
+        async _loadUserInfo() {
+
+            try {
+                if (Container) {
+                    const oUserInfo = await Container.getServiceAsync("UserInfo");
+                    console.log(oUserInfo);
+                    let sName =
+                        oUserInfo.getFullName() ||
+                        oUserInfo.getFirstName() ||
+                        "";
+
+                    if (sName) {
+                        sName = this._formatName(sName);
+                    }
+                    console.log("Resolved Name:", sName);
+                    this.getView().getModel("chatModel")
+                        .setProperty("/userName", sName);
+                }
+            } catch (error) {
+                console.warn("UserInfo service not available", error);
+            }
+        },
+        _formatName: function (sName) {
+            return sName
+                .toLowerCase()
+                .split(" ")
+                .map(function (word) {
+                    return word.charAt(0).toUpperCase() + word.slice(1);
+                })
+                .join(" ");
+        },
 
         onFloatingPress: function (oEvent) {
             const oDialog = this.byId("chatDialog");
@@ -765,21 +799,7 @@ sap.ui.define([
             const oPopover = this.byId("suggestionPopover");
             oPopover.openBy(oEvent.getSource());
         },
-        async _loadUserInfo() {
 
-            try {
-                if (Container) {
-                    const oUserInfo = await Container.getServiceAsync("UserInfo");
-                    console.log(oUserInfo);
-                    const sName = oUserInfo.getFirstName() || oUserInfo.getUser();
-
-                    this.getView().getModel("chatModel")
-                        .setProperty("/userName", sName);
-                }
-            } catch (error) {
-                console.warn("UserInfo service not available", error);
-            }
-        },
 
         onPostMessage(oEvent) {
 
@@ -936,5 +956,17 @@ sap.ui.define([
                 oScroll.scrollTo(0, oScroll.getScrollDelegate().getMaxScrollTop());
             }, 100);
         },
+
+        onChatAfterOpen: function () {
+            this._scrollToBottom();
+        },
+        formatInitial: function (sName) {
+            if (!sName) {
+                return "U";
+            }
+
+            return sName.trim().charAt(0).toUpperCase();
+        }
+
     });
 });
