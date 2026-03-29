@@ -902,33 +902,59 @@ sap.ui.define([
             return "datetime'" + sYear + "-" + sMonth + "-" + sDay + "T00:00:00'";
         },
 
-        _buildResponse(sValue, oSummary) {
+        _buildResponse: function (sValue, oSummary) {
 
             const sQuery = sValue.toLowerCase();
 
+            const total = oSummary.TotalInspections;
+            const accepted = oSummary.AcceptedCount;
+            const rejected = oSummary.RejectedCount;
+            const rate = oSummary.RejectionRate;
+            const prevRate = oSummary.PrevRejectionRate;
+            const delta = oSummary.RejectionRateDelta;
+            const reasons = oSummary.TopRejectedReason;
+            const carriers = oSummary.TopRejectedCarrierLine;
+
+            // Clean comma list to readable format
+            const formatList = (sText) => {
+                if (!sText) return "";
+                const arr = sText.split(",").map(s => s.trim());
+                if (arr.length === 1) return arr[0];
+                if (arr.length === 2) return arr.join(" and ");
+                return arr.slice(0, -1).join(", ") + ", and " + arr[arr.length - 1];
+            };
+
             if (sQuery.includes("total")) {
-                return "Total inspections : " + oSummary.TotalInspections;
+                return `For the selected period, ${total} inspections were completed.`;
             }
 
-            if (sQuery.includes("accepted")) {
-                return "Accepted : " + oSummary.AcceptedCount +
-                    "\nRejected : " + oSummary.RejectedCount;
+            if (sQuery.includes("accepted") || sQuery.includes("rejected")) {
+                return `For the selected period, ${total} inspections were completed.\n` +
+                    `${accepted} were accepted and ${rejected} rejected (${rate}% rejection rate).`;
             }
 
             if (sQuery.includes("reason")) {
-                return "Top rejection reasons:\n" + oSummary.TopRejectedReason;
+                return `For the selected period, the top rejection reasons were ${formatList(reasons)}.`;
             }
 
-            if (sQuery.includes("carrier") || sQuery.includes("rejected")) {
-                return "Top rejected carriers:\n" + oSummary.TopRejectedCarrierLine;
+            if (sQuery.includes("carrier")) {
+                return `For the selected period, ${formatList(carriers)} were the top rejected carrier lines.`;
             }
 
             if (sQuery.includes("previous") || sQuery.includes("rate")) {
-                return "Previous rejection rate : " + oSummary.PrevRejectionRate + "%";
+                const trend = delta > 0 ? "increased" : "decreased";
+                return `For the selected period, the rejection rate is ${rate}%.\n` +
+                    `It has ${trend} from ${prevRate}% compared to the previous period.`;
             }
 
-            return "I couldn't understand the question.";
+            // Default full summary
+            return `For the selected period, ${total} inspections were completed.\n` +
+                `${accepted} were accepted and ${rejected} rejected (${rate}% rejection rate).\n` +
+                `Top rejection reasons: ${formatList(reasons)}.\n` +
+                `Top rejection carrier lines: ${formatList(carriers)}.\n` +
+                `Rejection rate changed from ${prevRate}% to ${rate}% (Δ ${delta}%).`;
         },
+
         _removeTyping() {
             const oChatModel = this.getView().getModel("chatModel");
             const aMessages = oChatModel.getProperty("/messages")
